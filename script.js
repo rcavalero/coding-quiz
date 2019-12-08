@@ -1,41 +1,19 @@
-// variables needed
-// mainhdr
 var timerText = document.querySelector("#time");
 var mainHdrText = document.querySelector("#mainHdr");
 var mainParaText = document.querySelector("#mainPara");
 var choiceList = document.querySelector("#userChoices");
-var startButton = document.querySelector("#mainBtn");
 var inputForm = document.querySelector("#userInput")
 var userInitials = document.querySelector("#user");
 var userSubmitBtn = document.querySelector("#userButton");
-
-
+var highScores = document.querySelector("#vhs");
+var buttons = document.querySelector("#buttons");
 var timerInterval;
 var timeLeft = questions.length * 15;
 var quizCount = 0;
-// var stage = "main";
-// var options = questions[quizCount].choices;
+console.log(userInitials.textContent);
 
 
 startPage();
-
-// console.log(mainHdrText.textContent);
-// console.log(questions);
-// console.log(options);
-
-// console.log("time "+timeLeft);
-// console.log("para  = "+mainParaText);
-
-// console.log("para text = "+mainParaText.textContent);
-// console.log("choice list = "+choiceList);
-// console.log("button = "+startButton.textContent);
-// console.log("title = "+ questions.title);
-// console.log("2nd title = "+questions[0].title);
-// console.log("answer = "+questions[0].answer);
-// console.log("1st choice = "+questions[0].choices);
-console.log("count = "+quizCount);
-// console.log("stage = "+stage);
-
 
 
 // This populates the mainBody on open or when user clicks "Start Over"
@@ -43,26 +21,28 @@ function startPage(){
     timerText.textContent = "Time: "+ timeLeft;
     mainHdrText.textContent = "Coding Quiz Challenge";
     mainParaText.textContent = "Try to answer the following code related-questions within the time limit.  There is a 10 second penalty for incorrect answers!";
-    startButton.textContent = "Start Quiz";
-};
+    userChoices.innerHTML = "";
+    buttons.innerHTML = ""
+    quizCount = 0;
+    var startBtn = document.createElement("button");
+        
+    buttons.appendChild(startBtn)
+    startBtn.setAttribute("id","start")
+    startBtn.textContent = "Start Quiz"
 
-// This currently starts the screen from the start page
-// will need to add functionality to determine what stage we are at?
-startButton.addEventListener("click", function(event){
-    // if (stage === "main") {
-        mainParaText.textContent = "";
-        startButton.style.display = "none";
+    var startQuiz = document.querySelector("#start");
+    start.addEventListener("click", function(event){
         quizQuestions();
         startTimer();
-    // }
-});
-
+    });
+};
 
 function quizQuestions (){
  
-    // stage = "quiz"    
     var options = questions[quizCount].choices;
+    mainParaText.textContent = "";
     userChoices.innerHTML = "";
+    buttons.innerHTML = ""
  
 // This creates a button for each option
     mainHdrText.textContent = questions[quizCount].title;
@@ -77,7 +57,7 @@ function quizQuestions (){
         choices.appendChild(choice);
         choiceList.appendChild(choices);
      }
-}
+};
 
 // this kicks in when a user selects on option for a question
 choiceList.addEventListener("click", function(event) {
@@ -89,7 +69,7 @@ choiceList.addEventListener("click", function(event) {
         if (element.matches(".choiceBtn") === true) {
             if (questions[quizCount].choices[index] !== questions[quizCount].answer) {
                 result = "Wrong"
-                timeLeft = timeLeft-5
+                timeLeft = timeLeft-10
             }
         }    
             document.getElementById("result").innerHTML = result; 
@@ -107,9 +87,6 @@ choiceList.addEventListener("click", function(event) {
             quizQuestions();
         }  
         else {
-            // setTimeout(function() {
-            //     //your code to be executed after 1 second
-            //   }, 2000);
             clearInterval(timerInterval)
             setTimeout(function() {
               }, 1000);
@@ -117,51 +94,83 @@ choiceList.addEventListener("click", function(event) {
             quizOver()
         }
       });
-      
 
-function quizOver() {
+      
     // Quiz Complete (all questions answered or time runs out)
-        // Enter initials and shows score (This then goes to High Score Display)
-    //   Their final score and initials are then stored in `localStorage`.
-    userChoices.innerHTML = "";
+function quizOver() {
     mainHdrText.textContent = "All Done";
     mainParaText.textContent = "Your Final Score is "+timeLeft;
-    document.getElementById("userInput").style.display = "block"; 
-    user.textContent = "";
-    user.focus();
+    userChoices.innerHTML = "";
+    buttons.innerHTML = ""
 
-    userSubmitBtn.addEventListener("click", function(event) {
+    document.getElementById("userInput").style.display = "block"; 
+    
+    userInitials.focus();
+    console.log("initials3 "+userInitials.textContent.value);
+
+};
+
+// this records the score into local storage
+    inputForm.addEventListener("submit", function(event) {
         event.preventDefault();
       
-        var user = userInitials.value;
-        var score = timeLeft;
-      
-        // if (user !== "") {
-        //   displayMessage("error", "Initials cannot be blank");
-        // }
-          localStorage.setItem("user", user);
-          localStorage.setItem("score", score);
-          highScore()
+      if (userInitials.value.trim() === "") {
+            return;
+      }
+        var quizScores = JSON.parse(localStorage.getItem("quizScores") || "[]");
+        var score = {
+            initials: userInitials.value.trim(),
+            time: timeLeft
+        };
+        quizScores.push(score);
+        localStorage.setItem("quizScores", JSON.stringify(quizScores));
+        userInitials.value = ""
+        highScore()
 
         });
 
-       
 
-
-}
-
-
+    // This displays High Scores
 function highScore() {
-    // Display High Scores
-        // shows high scores and has two buttons- "start over" "clear high scores"
         mainHdrText.textContent = "High Scores";
         mainParaText.textContent = "";
+        userChoices.innerHTML = "";
+        buttons.innerHTML = ""
         document.getElementById("userInput").style.display = "none"; 
 
-    // function renderScores()
+        var quizScores = JSON.parse(localStorage.getItem("quizScores") || "[]");
+        var scores = document.querySelector("#userChoices");
 
+        quizScores.forEach(function(score){
+          var listEl = document.createElement("li");
+          scores.appendChild(listEl);
+          listEl.textContent = score.initials +" - "+ score.time;
+        });
 
-}
+    
+        var restartBtn = document.createElement("button");
+        buttons.appendChild(restartBtn);
+        restartBtn.setAttribute("id","restart");
+        restartBtn.textContent = "Start Over";
+        
+            var clearScoreBtn = document.createElement("button");
+        buttons.appendChild(clearScoreBtn);
+        clearScoreBtn.setAttribute("id","clear");
+        clearScoreBtn.textContent = "Clear High Scores";
+
+        var clearScore = document.querySelector("#clear");
+            clearScore.addEventListener("click", function(event){
+            localStorage.removeItem("quizScores");
+            scores.innerHTML = "";
+        });
+        
+        var restart = document.querySelector("#restart");
+        restart.addEventListener("click", function(event){
+            timeLeft = questions.length * 15;
+            startPage();
+        });
+};
+
 
     // When timer reaches 10 seconds change color to red
     function startTimer() {
@@ -171,11 +180,17 @@ function highScore() {
       
           if(timeLeft === 0) {
             clearInterval(timerInterval);
-            quizOverx();
+            quizOver();
           }
       
         }, 1000);
-      }
+      };
+
+highScores.addEventListener("click", function(event){
+    clearInterval(timerInterval);
+    highScore()
+    
+});
 
  
 // BONUS:
